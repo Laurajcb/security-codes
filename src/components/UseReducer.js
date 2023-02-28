@@ -1,16 +1,10 @@
-import React, { useState, useEffect } from "react";
-
+import React, { useEffect, reducer } from "react";
 
 const SECURITY_CODE = 'paradigma';
 
-function UseState({ name }) {
-  const [state, setState] = useState({
-    value: '',
-    error: false,
-    loading: false,
-    deleted: false,
-    confirmed: false,
-  })
+
+function UseReducer({name}) {
+  const [state, setState] = useReducer(reducer, initialState);
 
   const onComfirm = () => {
     setState({
@@ -141,5 +135,75 @@ function UseState({ name }) {
   }
 }
 
+const initialState = {
+  value: '',
+  error: false,
+  loading: false,
+  deleted: false,
+  confirmed: false,
+};
 
-export { UseState };
+//Reducer with if
+const reducerIf = (state, action) => {
+  if (action.type === 'ERROR') {
+    return {
+      ...state,
+      error: true,
+      loading: false,
+    }
+  } else if (action.type === 'CHECK') {
+    return {
+      ...state,
+      loading: true,
+    }
+  } else {
+    return {
+      ...state
+    }
+  }
+}
+
+//Reducer with switch The most used 
+const reducerSwitch = (state, action) => {
+  switch (action.type) {
+    case 'ERROR':
+      return {
+        ...state,
+        error: true,
+        loading: false,
+      }
+    case 'CHECK':
+      return {
+        ...state,
+        loading: true,
+      }
+    default:
+      return {
+        ...state
+      }
+  }
+}
+
+//Reducer Obj 
+
+const reducerObj = (state) => ({
+  'ERROR': {
+    ...state,
+    error: true,
+    loading: false,
+  },
+  'CHECK': {
+    ...state,
+    loading: true,
+  }
+
+})
+
+const reducer = (state, action) => {
+  if (reducerObj(state)[action.type]) {
+    return reducerObj(state)[action.type]
+  } else {
+    return state
+  }
+}
+export { UseReducer };
