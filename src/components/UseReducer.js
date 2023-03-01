@@ -1,209 +1,139 @@
-import React, { useEffect, reducer } from "react";
+import React, { useEffect } from "react";
 
 const SECURITY_CODE = 'paradigma';
 
-
-function UseReducer({name}) {
-  const [state, setState] = useReducer(reducer, initialState);
-
-  const onComfirm = () => {
-    setState({
-      ...state,
-      error: false,
-      loading: false,
-      confirmed: true,
-    })
+function UseReducer({ name }) {
+  const [state, dispatch] = React.useReducer(reducer, initialState);
+  const onConfirm = () => {
+    dispatch({ type: actionTypes.confirm });
   }
-
   const onError = () => {
-    setState({
-      ...state,
-      error: true,
-      loading: false
-    })
+    dispatch({ type: actionTypes.error });
   }
-
-  const onInput = (newValue) => {
-    setState({
-      ...state,
-      value: newValue
-    })
+  const onWrite = (eventValue) => {
+    dispatch({ type: actionTypes.write, payload: eventValue });
   }
-
   const onCheck = () => {
-    setState({
-      ...state,
-      loading: true
-    })
+    dispatch({ type: actionTypes.check });
   }
-
   const onDelete = () => {
-    setState({
-      ...state,
-      deleted: true,
-    })
+    dispatch({ type: actionTypes.delete });
   }
-
   const onReset = () => {
-    setState({
-      ...state,
-      confirmed: false,
-      deleted: false,
-      value: ''
-    })
+    dispatch({ type: actionTypes.reset });
   }
-
   useEffect(() => {
-    if (state.loading) {
+
+    if (!!state.loading) {
       setTimeout(() => {
         if (state.value === SECURITY_CODE) {
-          onComfirm()
+          onConfirm()
         } else {
           onError()
         }
-      }, 3000)
+
+      }, 3000);
     }
-  }, [state])
+  }, [state]);
 
   if (!state.deleted && !state.confirmed) {
     return (
-      <div>
-        <h2>Eliminar {name}</h2>
-        <p>Por favor, escribe el codigo de seguridad.</p>
-        {
-          (state.error && !state.loading) && (
-            <p>Error: El codigo es incorrecto.</p>
-          )
-        }
-
-        {
-          state.loading && (
-            <p>Loading ...</p>
-          )
-
-        }
+      <React.Fragment>
+        <h2>Eliminar{name}</h2>
+        <p>Por favor, escribe el código de seguridad</p>
+        {(!state.loading && state.error) && (
+          <p>El Código es incorrecto</p>
+        )}
+        {state.loading && (
+          <p>Cargando...</p>
+        )}
         <input
-          placeholder="Codigo de seguridad"
           value={state.value}
           onChange={(event) => {
-            onInput(event.target.value)
+            onWrite(event.target.value)
           }}
+
+          placeholder="Código de Seguridad"
         />
         <button
-          type="submit"
-          onClick={() => {
-            onCheck()
-          }}
-        >
-          Comprobar
+          onClick={onCheck}
+        >Comprobar
         </button>
-      </div>
-    )
-  } else if (state.confirmed && !state.deleted) {
+      </React.Fragment>
+    );
+  } else if (!!state.confirmed && !state.deleted) {
     return (
-      <>
-        <p>Estas seguro de Eliminar?</p>
-        <button
-          onClick={() => {
-            onDelete()
-          }}
-        >
-          Si, Eliminar
+      <React.Fragment>
+        <h2>Eliminar{name}</h2>
+        <p>¿Seguro que quieres eliminar{name}?</p>
+        <button type="button" onClick={onDelete}>Si, eliminar
         </button>
-        <button
-          onClick={() => {
-            onReset()
-          }}
-        >
-          Nooo
+        <button type="button" onClick={onReset}>No, cancelar
         </button>
-      </>
-    )
+      </React.Fragment>
+    );
   } else {
     return (
-      <>
-        <p>Eliminacion exitosa</p>
-        <button
-          onClick={() => {
-            onReset()
-          }}
-        >
-          Regresar al menu
-        </button>
-      </>
-    )
+      <React.Fragment>
+        <h2>¡{name}eliminado!</h2>
+        <button type="button" onClick={onReset}>Recuperar{name}</button>
+      </React.Fragment>
+    );
   }
 }
 
 const initialState = {
-  value: '',
+  value: "",
   error: false,
   loading: false,
   deleted: false,
-  confirmed: false,
+  confirmed: false
 };
-
-//Reducer with if
-const reducerIf = (state, action) => {
-  if (action.type === 'ERROR') {
-    return {
-      ...state,
-      error: true,
-      loading: false,
-    }
-  } else if (action.type === 'CHECK') {
-    return {
-      ...state,
-      loading: true,
-    }
-  } else {
-    return {
-      ...state
-    }
-  }
+const actionTypes = {
+  confirm: 'CONFIRM',
+  error: 'ERROR',
+  write: 'WRITE',
+  check: 'CHECK',
+  delete: 'DELETE',
+  reset: 'RESET',
 }
-
-//Reducer with switch The most used 
-const reducerSwitch = (state, action) => {
-  switch (action.type) {
-    case 'ERROR':
-      return {
-        ...state,
-        error: true,
-        loading: false,
-      }
-    case 'CHECK':
-      return {
-        ...state,
-        loading: true,
-      }
-    default:
-      return {
-        ...state
-      }
-  }
-}
-
-//Reducer Obj 
-
-const reducerObj = (state) => ({
-  'ERROR': {
+const reducerObject = (state, payload = false) => ({
+  [actionTypes.confirm]: {
+    ...state,
+    error: false,
+    loading: false,
+    confirmed: true
+  },
+  [actionTypes.error]: {
     ...state,
     error: true,
-    loading: false,
+    loading: false
   },
-  'CHECK': {
+  [actionTypes.write]: {
     ...state,
-    loading: true,
-  }
-
-})
-
+    value: payload
+  },
+  [actionTypes.check]: {
+    ...state,
+    loading: true
+  },
+  [actionTypes.delete]: {
+    ...state,
+    deleted: true
+  },
+  [actionTypes.reset]: {
+    ...state,
+    confirmed: false,
+    deleted: false,
+    value: ''
+  },
+});
 const reducer = (state, action) => {
-  if (reducerObj(state)[action.type]) {
-    return reducerObj(state)[action.type]
+  if (reducerObject(state)[action.type]) {
+    return reducerObject(state, action.payload)[action.type]
   } else {
-    return state
+    return state;
   }
 }
+
 export { UseReducer };
